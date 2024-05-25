@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import userAuth from "./routes/userAuth.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import productRoutes from "./routes/product.routes.js"; // Import product routes
 import connectDB from "./db/index.js";
 
 // Initialize configuration
@@ -29,11 +30,10 @@ app.use(
 // Serve static files
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// imp note:  you can upload images via the /api/upload endpoint. To view an uploaded image, navigate to http://localhost:4000/uploads/images/your-uploaded-image-name.jpg in your browser.
-
 // Routes
 app.use("/user", userAuth);
 app.use("/api", uploadRoutes);
+app.use("/products", productRoutes); // Use product routes
 
 // Connect to the database
 connectDB();
