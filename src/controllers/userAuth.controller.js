@@ -1,7 +1,9 @@
-import User from '../models/user.model.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+// controllers/userAuth.controller.js
+import User from "../models/user.model.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
+// Signup function
 export const signup = async (req, res) => {
   const { username, email, password } = req.body;
   try {
@@ -22,6 +24,7 @@ export const signup = async (req, res) => {
   }
 };
 
+// Login function
 export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -33,10 +36,12 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Wrong password" });
     }
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY, { expiresIn: '1d' });
-    res.cookie('token', token, {
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY, {
+      expiresIn: "1d",
+    });
+    res.cookie("token", token, {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: "lax",
       expires: new Date(Date.now() + 86400000),
     });
     res.status(200).json({ user, token });
@@ -45,15 +50,17 @@ export const login = async (req, res) => {
   }
 };
 
+// Logout function
 export const logout = async (req, res) => {
   try {
-    res.clearCookie('token');
+    res.clearCookie("token");
     res.status(200).json({ message: "Logged out successfully!" });
   } catch (error) {
     res.status(500).json({ message: "Error logging out!", error });
   }
 };
 
+// Get user details
 export const myDetails = async (req, res) => {
   try {
     const user = await User.findById(req._id);
