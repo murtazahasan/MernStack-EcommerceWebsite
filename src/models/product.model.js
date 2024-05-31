@@ -22,13 +22,13 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
       enum: [
-        "Electronics",
-        "Clothing",
-        "Books",
-        "Home Appliances",
-        "Sports",
-        "Toys",
-      ], // Defined categories
+        "men-shirts",
+        "women-shirts",
+        "men-watches",
+        "women-purse",
+        "men-shoes",
+        "women-shoes",
+      ],
     },
     imageUrl: {
       type: String,
@@ -41,7 +41,7 @@ const productSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
-); // Add timestamps option to schema
+);
 
 const Product = mongoose.model("Product", productSchema);
 
