@@ -3,15 +3,36 @@ import Product from "../models/product.model.js";
 
 // Get all products
 export const getAllProducts = async (req, res) => {
+  const { page = 1, limit = 10, search = "", category = "" } = req.query;
   try {
-    const products = await Product.find();
-    res.status(200).json(products);
+    const query = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (category) {
+      query.category = category;
+    }
+
+    const products = await Product.find(query)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const count = await Product.countDocuments(query);
+
+    res.status(200).json({
+      products,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error retrieving products", error: err.message });
+    res.status(500).json({ message: "Error retrieving products", error: err.message });
   }
 };
+
 
 // Add a new product
 export const addProduct = async (req, res) => {
