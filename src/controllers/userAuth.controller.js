@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 
 // Signup function
 export const signup = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, isAdmin = false } = req.body;
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -17,6 +17,7 @@ export const signup = async (req, res) => {
       username,
       email,
       password: hashedPassword,
+      isAdmin,
     });
     res.status(201).json({ user });
   } catch (error) {
@@ -36,9 +37,13 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Wrong password" });
     }
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_KEY, {
-      expiresIn: "1d",
-    });
+    const token = jwt.sign(
+      { _id: user._id, isAdmin: user.isAdmin },
+      process.env.JWT_KEY,
+      {
+        expiresIn: "1d",
+      }
+    );
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "lax",
