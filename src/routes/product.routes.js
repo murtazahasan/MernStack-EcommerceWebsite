@@ -1,10 +1,14 @@
+// product.routes.js
 import express from 'express';
-import { getAllProducts, addProduct, deleteProduct } from '../controllers/product.controller.js';
+import { getAllProducts, getProductById, addProduct, deleteProduct } from '../controllers/product.controller.js';
 
 const router = express.Router();
 
 // Get all products
 router.get('/', getAllProducts);
+
+// Get product by ID
+router.get('/:id', getProductById);
 
 // Add a new product
 router.post('/', addProduct);

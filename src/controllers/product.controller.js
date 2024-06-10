@@ -7,10 +7,8 @@ export const getAllProducts = async (req, res) => {
   try {
     const query = {};
     if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
+      const searchRegex = new RegExp(search, "i");
+      query.$or = [{ name: searchRegex }, { description: searchRegex }];
     }
     if (category) {
       query.category = category;
@@ -29,20 +27,48 @@ export const getAllProducts = async (req, res) => {
       currentPage: page,
     });
   } catch (err) {
-    res.status(500).json({ message: "Error retrieving products", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error retrieving products", error: err.message });
   }
 };
 
+// Get product by ID
+export const getProductById = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json({ product });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error fetching product details", error: err.message });
+  }
+};
 
 // Add a new product
 export const addProduct = async (req, res) => {
   try {
-    const { name, description, price, category, stock, imageUrl } = req.body;
+    const {
+      name,
+      description,
+      price,
+      discountPrice,
+      category,
+      stock,
+      imageUrl,
+    } = req.body;
 
     const newProduct = new Product({
       name,
       description,
       price,
+      discountPrice,
       category,
       imageUrl, // Use Cloudinary URL
       stock,
