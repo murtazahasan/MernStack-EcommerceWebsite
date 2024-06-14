@@ -51,6 +51,35 @@ export const getProductById = async (req, res) => {
   }
 };
 
+// Update a product by ID
+export const updateProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const updatedData = req.body;
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      updatedData,
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res
+      .status(200)
+      .json({
+        message: "Product updated successfully",
+        product: updatedProduct,
+      });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error updating product", error: err.message });
+  }
+};
+
 // Add a new product
 export const addProduct = async (req, res) => {
   try {
@@ -59,6 +88,7 @@ export const addProduct = async (req, res) => {
       description,
       price,
       discountPrice,
+      discountPercentage,
       category,
       stock,
       imageUrl,
@@ -69,8 +99,9 @@ export const addProduct = async (req, res) => {
       description,
       price,
       discountPrice,
+      discountPercentage,
       category,
-      imageUrl, // Use Cloudinary URL
+      imageUrl,
       stock,
     });
 

@@ -19,7 +19,9 @@ const productSchema = new mongoose.Schema(
     },
     discountPrice: {
       type: Number,
-      min: 0,
+    },
+    discountPercentage: {
+      type: Number,
     },
     category: {
       type: String,
