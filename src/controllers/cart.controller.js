@@ -1,10 +1,9 @@
-// controllers/cart.controller.js
 import User from "../models/user.model.js";
 import Cart from "../models/cart.model.js";
 import mongoose from "mongoose";
 
 export const addToCart = async (req, res) => {
-  console.log("Request received at addToCart");
+  console.log("Request received at cart.controllers");
   const userId = req._id;
   const { productId, quantity } = req.body;
 
