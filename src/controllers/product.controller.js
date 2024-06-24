@@ -9,9 +9,10 @@ export const searchProducts = async (req, res) => {
       return res.status(400).json({ message: "Query parameter is required" });
     }
     const searchRegex = new RegExp(query, "i");
-    const products = await Product.find({ name: searchRegex }).select(
-      "name imageUrl"
-    );
+    const products = await Product.find({
+      name: searchRegex,
+      category: { $nin: ["best-selling", "featured-product"] },
+    }).select("name imageUrl");
 
     res.status(200).json(products);
   } catch (err) {
