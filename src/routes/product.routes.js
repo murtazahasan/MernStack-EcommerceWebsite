@@ -5,23 +5,20 @@ import {
   addProduct,
   deleteProduct,
   updateProduct,
+  searchProducts, 
 } from "../controllers/product.controller.js";
 
 const router = express.Router();
-
-// Get all products
+// searching functionality for admin page
 router.get("/", getAllProducts);
+// searching functionality for frontend ui/ux
+router.get("/search", searchProducts);
 
-// Get product by ID
 router.get("/:id", getProductById);
-
-// Add a new product
 router.post("/", addProduct);
-
-// Update a product by ID
 router.put("/:id", updateProduct);
-
-// Delete a product by ID
 router.delete("/:id", deleteProduct);
+
+
 
 export default router;

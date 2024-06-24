@@ -1,7 +1,27 @@
 // src/controllers/product.controller.js
 import Product from "../models/product.model.js";
 
-// Get all products
+// searching functionality for frontend ui/ux
+export const searchProducts = async (req, res) => {
+  const { query } = req.query;
+  try {
+    if (!query) {
+      return res.status(400).json({ message: "Query parameter is required" });
+    }
+    const searchRegex = new RegExp(query, "i");
+    const products = await Product.find({ name: searchRegex }).select(
+      "name imageUrl"
+    );
+
+    res.status(200).json(products);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Error searching products", error: err.message });
+  }
+};
+
+// searching functionality for admin page
 export const getAllProducts = async (req, res) => {
   const { page = 1, limit = 10, search = "", category = "" } = req.query;
   try {
@@ -67,12 +87,10 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        message: "Product updated successfully",
-        product: updatedProduct,
-      });
+    res.status(200).json({
+      message: "Product updated successfully",
+      product: updatedProduct,
+    });
   } catch (err) {
     res
       .status(500)
