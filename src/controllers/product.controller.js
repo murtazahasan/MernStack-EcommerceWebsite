@@ -10,9 +10,9 @@ export const searchProducts = async (req, res) => {
     }
     const searchRegex = new RegExp(query, "i");
     const products = await Product.find({
-      name: searchRegex,
+      $or: [{ name: searchRegex }, { description: searchRegex }],
       category: { $nin: ["best-selling", "featured-product"] },
-    }).select("name imageUrl");
+    }).select("name description imageUrl");
 
     res.status(200).json(products);
   } catch (err) {
