@@ -1,4 +1,3 @@
-// index.js
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -7,7 +6,7 @@ import { fileURLToPath } from "url";
 import userAuth from "./routes/userAuth.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import productRoutes from "./routes/product.routes.js";
-import cartRoutes from './routes/cart.routes.js';
+import orderRoutes from "./routes/order.routes.js";
 import connectDB from "./db/index.js";
 
 // Initialize configuration
@@ -36,7 +35,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/user", userAuth);
 app.use("/api", uploadRoutes);
 app.use("/products", productRoutes);
-app.use("/cart", cartRoutes);
+app.use("/orders", orderRoutes);
 
 // Connect to the database
 connectDB();
