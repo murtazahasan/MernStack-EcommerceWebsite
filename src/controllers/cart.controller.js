@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import User from "../models/user.model.js";
 import Product from "../models/product.model.js";
 
+// Adds a product to the user's cart.
 export const addToCart = async (req, res) => {
   console.log("Request received at cart.controllers: addToCart");
   const userId = req._id;
@@ -50,6 +51,7 @@ export const addToCart = async (req, res) => {
   }
 };
 
+// Updates the quantity of a product in the user's cart.
 export const updateCartItem = async (req, res) => {
   console.log("Request received at cart.controllers: updateCartItem");
   const userId = req._id;
@@ -80,6 +82,7 @@ export const updateCartItem = async (req, res) => {
   }
 };
 
+// Removes a product from the user's cart.
 export const removeFromCart = async (req, res) => {
   console.log("Request received at cart.controllers: removeFromCart");
   const userId = req._id;
@@ -106,21 +109,44 @@ export const removeFromCart = async (req, res) => {
   }
 };
 
-export const getCart = async (req, res) => {
-  console.log("Request received at cart.controllers: getCart");
+// Removes all product from user's cart
+export const clearCart = async (req, res) => {
+  console.log("Request received at cart.controllers: clearCart");
   const userId = req._id;
 
   try {
-    const user = await User.findById(userId).populate("cart.items.product");
+    const user = await User.findById(userId);
     if (!user) {
       console.log("User not found:", userId);
       return res.status(404).json({ message: "User not found" });
     }
 
-    console.log("Cart fetched successfully:", user.cart);
-    res.status(200).json(user.cart.items);
+    user.cart.items = [];
+    await user.save();
+    console.log("Cart cleared:", user.cart);
+    res.status(200).json({ message: "Cart cleared", cart: user.cart.items });
   } catch (error) {
-    console.error("Error getting cart:", error);
+    console.error("Error clearing cart:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
+// Retrieves the user's cart items.
+// export const getCart = async (req, res) => {
+//   console.log("Request received at cart.controllers: getCart");
+//   const userId = req._id;
+
+//   try {
+//     const user = await User.findById(userId).populate("cart.items.product");
+//     if (!user) {
+//       console.log("User not found:", userId);
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     console.log("Cart fetched successfully:", user.cart);
+//     res.status(200).json(user.cart.items);
+//   } catch (error) {
+//     console.error("Error getting cart:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };

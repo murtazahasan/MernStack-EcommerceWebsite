@@ -10,7 +10,7 @@ import {
   addToCart,
   updateCartItem,
   removeFromCart,
-  getCart,
+  clearCart,
 } from "../controllers/cart.controller.js";
 
 const userAuth = express.Router();
@@ -27,7 +27,8 @@ userAuth.get("/my-details", verifyToken, myDetails);
 userAuth.post("/cart/add", verifyToken, addToCart);
 userAuth.put("/cart/update", verifyToken, updateCartItem);
 userAuth.delete("/cart/remove", verifyToken, removeFromCart);
-userAuth.get("/cart", verifyToken, getCart);
+userAuth.delete("/cart/clear", verifyToken, clearCart);
+// userAuth.get("/cart", verifyToken, getCart);
 
 // Example of an admin-protected route
 userAuth.get("/admin-only", verifyToken, verifyAdmin, (req, res) => {
