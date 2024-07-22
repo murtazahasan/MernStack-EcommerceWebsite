@@ -8,9 +8,17 @@ const calculateTotalAmount = (items) => {
   );
 };
 
+// create new orders
 export const createOrder = async (req, res) => {
   console.log("Request received at order.controllers: createOrder");
+  console.log("Request body:", req.body);
   const { userId, items, shippingAddress, totalAmount } = req.body;
+
+
+  if (!userId) {
+    console.log("No userId provided");
+    return res.status(400).json({ message: "userId is required" });
+  }
 
   try {
     const newOrder = new Order({
@@ -23,7 +31,6 @@ export const createOrder = async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    // Clear the user's cart
     const user = await User.findById(userId);
     if (user) {
       user.cart.items = [];
