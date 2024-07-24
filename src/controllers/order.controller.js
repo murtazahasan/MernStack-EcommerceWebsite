@@ -52,7 +52,7 @@ export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate("userId", "username email")
-      .populate("items.product", "name price discountPrice imageUrl");
+      .populate("items.productId", "name price discountPrice imageUrl");
 
     console.log("Orders fetched successfully:", orders.length);
     res.status(200).json(orders);
