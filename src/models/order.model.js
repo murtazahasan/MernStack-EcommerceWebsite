@@ -49,6 +49,15 @@ const OrderSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["pending", "confirm", "delivered", "warning"],
+      default: "pending",
+    },
+    message: {
+      type: String,
+      default: "",
+    },
   },
   totalAmount: {
     type: Number,
