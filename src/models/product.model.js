@@ -1,4 +1,3 @@
-// models/product.model.js
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
@@ -47,6 +46,14 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
+    },
+    sold: {
+      type: Number,
+      default: 0,
+    },
+    version: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }

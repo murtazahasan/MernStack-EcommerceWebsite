@@ -1,5 +1,6 @@
 import Order from "../models/order.model.js";
 import User from "../models/user.model.js";
+import Product from "../models/product.model.js";
 
 const calculateTotalAmount = (items) => {
   return items.reduce(
@@ -10,7 +11,17 @@ const calculateTotalAmount = (items) => {
 
 // create new orders
 export const createOrder = async (req, res) => {
+  console.log("Request received at order.controllers: createOrder");
+
   const { userId, items, shippingAddress, totalAmount } = req.body;
+
+  console.log(
+    "Extracted request body:",
+    userId,
+    items,
+    shippingAddress,
+    totalAmount
+  );
 
   if (!userId) {
     return res.status(400).json({ message: "userId is required" });
@@ -19,6 +30,7 @@ export const createOrder = async (req, res) => {
   try {
     // Step 1: Check stock for all items first
     const productIds = items.map((item) => item.productId);
+    console.log("Extracted product IDs:", productIds);
     const products = await Product.find({ _id: { $in: productIds } });
 
     for (const item of items) {
@@ -28,6 +40,7 @@ export const createOrder = async (req, res) => {
           .status(404)
           .json({ message: `Product not found for ID ${item.productId}` });
       }
+      console.log(`Checking stock for product: ${product.name}`);
       if (product.stock < item.quantity) {
         return res.status(400).json({
           message: `Insufficient stock for product ${product.name}. Please adjust your order.`,
@@ -35,19 +48,26 @@ export const createOrder = async (req, res) => {
       }
     }
 
-    // Step 2: Update stock levels with optimistic locking
+    // Step 2: Update stock levels with optimistic locking and increment sold
     const updatePromises = [];
     for (const item of items) {
       const product = products.find((prod) => prod._id.equals(item.productId));
       const currentVersion = product.version; // Store current version
+      console.log(
+        `Updating stock for product: ${product.name} (Version: ${currentVersion})`
+      );
 
       product.stock -= item.quantity;
+      product.sold += item.quantity; // Increment sold quantity
       product.version++; // Increment version before saving
 
       updatePromises.push(product.save()); // Save with version comparison
     }
 
     await Promise.all(updatePromises); // Wait for all updates to complete
+    console.log(
+      "Stock levels updated and sold quantities incremented successfully."
+    );
 
     // Step 3: Create new order
     const newOrder = new Order({
@@ -92,7 +112,7 @@ export const getAllOrders = async (req, res) => {
       .populate("userId", "username email")
       .populate(
         "items.productId",
-        "name price discountPrice imageUrl description category"
+        "name price discountPrice imageUrl description category stock sold version"
       );
 
     console.log("Orders fetched successfully:", orders.length);
@@ -138,5 +158,58 @@ export const deleteOrder = async (req, res) => {
   } catch (error) {
     console.error("Error deleting order:", error);
     res.status(500).json({ message: "Error deleting order" });
+  }
+};
+
+// Search orders
+export const searchOrders = async (req, res) => {
+  console.log("Request received at order.controllers: searchOrders");
+
+  const { query } = req.query;
+
+  if (!query) {
+    return res.status(400).json({ message: "Query parameter is required" });
+  }
+
+  try {
+    const orders = await Order.find({
+      $or: [
+        // { "shippingAddress.fullName": { $regex: query, $options: "i" } },
+        // { "shippingAddress.addressLine": { $regex: query, $options: "i" } },
+        // { "shippingAddress.city": { $regex: query, $options: "i" } },
+        { "shippingAddress.email": { $regex: query, $options: "i" } },
+        { "shippingAddress.postalCode": { $regex: query, $options: "i" } },
+        { "shippingAddress.status": { $regex: query, $options: "i" } },
+        { "shippingAddress.message": { $regex: query, $options: "i" } },
+        { "shippingAddress.phoneNumber": { $regex: query, $options: "i" } },
+        // { "userId.username": { $regex: query, $options: "i" } },
+        { "userId.email": { $regex: query, $options: "i" } },
+      ],
+    }).populate("userId", "username email");
+
+    console.log("Orders fetched successfully:", orders.length);
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ message: "Error fetching orders" });
+  }
+};
+
+// Search orders by filter of status
+export const filterOrdersByStatus = async (req, res) => {
+  console.log("Request received at order.controllers: filterOrdersByStatus");
+  try {
+    const { status } = req.params;
+    console.log("Received status:", status);
+
+    const orders = await Order.find({
+      "shippingAddress.status": { $eq: status }, // Use $eq for exact match
+    });
+    console.log("Found orders:", orders);
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ error: error.message });
   }
 };
