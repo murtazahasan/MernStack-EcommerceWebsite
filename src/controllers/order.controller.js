@@ -133,9 +133,17 @@ export const editOrder = async (req, res) => {
   console.log("Received updateData:", updateData);
 
   try {
-    const updatedOrder = await Order.findByIdAndUpdate(orderId, updateData, {
-      new: true,
-    });
+    // Update the order
+    await Order.findByIdAndUpdate(orderId, updateData, { new: true });
+
+    // Fetch the updated order and populate the fields
+    let updatedOrder = await Order.findById(orderId)
+      .populate("userId", "username email")
+      .populate(
+        "items.productId",
+        "name price discountPrice imageUrl description category stock sold version"
+      );
+
     console.log("Order updated successfully:", updatedOrder);
     res.status(200).json(updatedOrder);
   } catch (error) {
@@ -185,7 +193,12 @@ export const searchOrders = async (req, res) => {
         // { "userId.username": { $regex: query, $options: "i" } },
         { "userId.email": { $regex: query, $options: "i" } },
       ],
-    }).populate("userId", "username email");
+    })
+      .populate("userId", "username email")
+      .populate(
+        "items.productId",
+        "name price discountPrice imageUrl description category stock sold version"
+      );
 
     console.log("Orders fetched successfully:", orders.length);
     res.status(200).json(orders);
@@ -202,11 +215,21 @@ export const filterOrdersByStatus = async (req, res) => {
     const { status } = req.params;
     console.log("Received status:", status);
 
-    const orders = await Order.find({
+    let orders = await Order.find({
       "shippingAddress.status": { $eq: status }, // Use $eq for exact match
     });
-    console.log("Found orders:", orders);
 
+    // Populate the fields
+    orders = await Order.populate(orders, [
+      { path: "userId", select: "username email" },
+      {
+        path: "items.productId",
+        select:
+          "name price discountPrice imageUrl description category stock sold version",
+      },
+    ]);
+
+    console.log("Found orders:", orders);
     res.status(200).json(orders);
   } catch (error) {
     console.error("Error fetching orders:", error);
