@@ -2,13 +2,6 @@ import Order from "../models/order.model.js";
 import User from "../models/user.model.js";
 import Product from "../models/product.model.js";
 
-const calculateTotalAmount = (items) => {
-  return items.reduce(
-    (total, item) => total + item.product.discountPrice * item.quantity,
-    0
-  );
-};
-
 // create new orders
 export const createOrder = async (req, res) => {
   console.log("Request received at order.controllers: createOrder");
@@ -219,7 +212,6 @@ export const filterOrdersByStatus = async (req, res) => {
       "shippingAddress.status": { $eq: status }, // Use $eq for exact match
     });
 
-    // Populate the fields
     orders = await Order.populate(orders, [
       { path: "userId", select: "username email" },
       {
@@ -234,5 +226,52 @@ export const filterOrdersByStatus = async (req, res) => {
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+// Backend - getSalesData controller function
+export const getSalesData = async (req, res) => {
+  console.log("Request received at order.controllers: getSalesData");
+
+  const { startDate, endDate } = req.query;
+
+  try {
+    const matchCriteria = {};
+    if (startDate) {
+      matchCriteria.createdAt = { $gte: new Date(startDate) };
+      console.log("startDate:", startDate);
+      console.log("matchCriteria:", matchCriteria);
+    }
+    if (endDate) {
+      matchCriteria.createdAt = {
+        ...matchCriteria.createdAt,
+        $lte: new Date(endDate),
+      };
+    }
+    console.log("matchCriteria before aggregation:", matchCriteria);
+
+    const salesData = await Order.aggregate([
+      { $match: matchCriteria },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$totalAmount" },
+          totalQuantity: { $sum: "$items.quantity" },
+        },
+      },
+    ]);
+
+    console.log("salesData:", salesData);
+
+    const totalAmount = salesData.length > 0 ? salesData[0].totalAmount : 0;
+    const totalQuantity = salesData.length > 0 ? salesData[0].totalQuantity : 0;
+
+    res.status(200).json({ totalAmount, totalQuantity });
+  } catch (error) {
+    console.error("Error fetching sales data:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching sales data", error: error.message });
   }
 };

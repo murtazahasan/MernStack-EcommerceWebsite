@@ -7,6 +7,7 @@ import {
   deleteOrder,
   searchOrders,
   filterOrdersByStatus,
+  getSalesData,
 } from "../controllers/order.controller.js";
 import { verifyToken, verifyAdmin } from "../middlewares/auth.middleware.js";
 
@@ -16,5 +17,6 @@ router.put("/edit/:orderId", verifyToken, verifyAdmin, editOrder);
 router.delete("/delete/:orderId", verifyToken, verifyAdmin, deleteOrder);
 router.get("/search", verifyToken, verifyAdmin, searchOrders);
 router.get("/status/:status", filterOrdersByStatus);
+router.get("/sales-data", getSalesData);
 
 export default router;
